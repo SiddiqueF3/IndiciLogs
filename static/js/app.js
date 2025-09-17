@@ -227,12 +227,12 @@ $(document).ready(function() {
                     targets: [7], // Jira Status column - show button based on status
                     render: function(data, type, row) {
                         if (type === 'display') {
-                            const status = data || '0';
-                            if (status == '0') {
+                            const status = data || 'false';
+                            if (status == 'false') {
                                 return `<button class="btn btn-sm btn-success" onclick="openJira(${row[0]})">
                                     <i class="fas fa-external-link-alt"></i> Open Jira
                                 </button>`;
-                            } else if (status == '1') {
+                            } else if (status == 'true') {
                                 return `<button class="btn btn-sm btn-secondary" disabled>
                                     <i class="fas fa-check"></i> Jira Created
                                 </button>`;
