@@ -10,51 +10,60 @@ on:
       - master
   workflow_dispatch:
 
+env:
+  AZURE_WEBAPP_NAME: IndiciLogsAndErrors   # your app name
+  PYTHON_VERSION: '3.11'                  # stable Python version (Azure supports 3.11)
+
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read # required for checkout
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Set up Python version
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Create and start virtual environment
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-      
       - name: Install dependencies
-        run: pip install -r requirements.txt
-        
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Upload artifact for deployment jobs
+      # Optional: Add test step here (PyTest, Django test suites, etc.)
+
+      - name: Create deployment package
+        run: |
+          echo "Creating artifact folder"
+          mkdir artifact
+          shopt -s extglob
+          cp -R !(venv|artifact|.git) artifact/
+        shell: bash
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: |
-            .
-            !venv/
+          path: artifact/
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write   # required for OIDC login
+      contents: read
 
     steps:
-      - name: Download artifact from build job
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: python-app
-      
+          path: ./artifact
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -62,10 +71,9 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_688F1A8EF9234368A20E4F3ED7308B1E }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_82EB8F529B734FF7A356087CD3C47BC3 }}
 
-      - name: 'Deploy to Azure Web App'
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
-        id: deploy-to-webapp
         with:
-          app-name: 'IndiciLogsAndErrors'
-          slot-name: 'Production'
-          
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          slot-name: production
+          package: ./artifact
