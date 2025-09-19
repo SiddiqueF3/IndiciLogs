@@ -2,7 +2,7 @@
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 # More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
 
-name: Build and deploy Python app to Azure Web App - IndiciLogsAndErrors
+name: Build and deploy Python app to Azure Web App - indicilogsanderrors
 
 on:
   push:
@@ -11,8 +11,8 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: IndiciLogsAndErrors   # your app name
-  PYTHON_VERSION: '3.11'                  # stable Python version (Azure supports 3.11)
+  AZURE_WEBAPP_NAME: indicilogsanderrors   # must match your Web App name in Azure (lowercase)
+  PYTHON_VERSION: '3.11'                  # stable version supported in Azure
 
 jobs:
   build:
